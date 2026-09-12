@@ -128,9 +128,14 @@ class FakeStreamMagicDevice:
     async def emit(self, path: str) -> None:
         """Push an unsolicited update for a path to every open connection."""
         message = self._message(path, "emit")
-        for connection in self.connections:
-            if not connection.closed:
+        # Iterate a copy: a connection closing mid-send mutates self.connections.
+        for connection in list(self.connections):
+            if connection.closed:
+                continue
+            try:
                 await connection.send_json(message)
+            except (ConnectionResetError, RuntimeError):
+                continue
 
     def _message(self, path: str, message_type: str) -> dict[str, Any]:
         return {
