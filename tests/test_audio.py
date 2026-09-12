@@ -1,8 +1,8 @@
 """Tests for audio settings: volume limit, balance, equalizer and room correction."""
 
 import pytest
-from conftest import ConnectClient
-from fake_device import FakeStreamMagicDevice, wait_until
+from conftest import ConnectClient, wait_until
+from fake_device import FakeStreamMagicDevice
 
 from aiostreammagic.exceptions import StreamMagicError
 from aiostreammagic.models import EQBand, EQFilterType

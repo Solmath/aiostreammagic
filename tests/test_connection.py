@@ -3,8 +3,8 @@
 import pytest
 from aiohttp import ClientSession
 from aiohttp.test_utils import TestServer
-from conftest import ConnectClient
-from fake_device import FakeStreamMagicDevice, create_app, wait_until
+from conftest import ConnectClient, wait_until
+from fake_device import FakeStreamMagicDevice, create_app
 
 from aiostreammagic import endpoints as ep
 from aiostreammagic.exceptions import StreamMagicError

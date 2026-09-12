@@ -1,7 +1,8 @@
 """Tests for transport controls, queue modes, presets and radio playback."""
 
 import pytest
-from fake_device import FakeStreamMagicDevice, wait_until
+from conftest import wait_until
+from fake_device import FakeStreamMagicDevice
 
 from aiostreammagic import endpoints as ep
 from aiostreammagic.models import RepeatMode, ShuffleMode

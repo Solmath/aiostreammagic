@@ -10,9 +10,7 @@ the 851n runs API 1.8 and genuinely lacks endpoints the cxn100 exposes.
 
 from __future__ import annotations
 
-import asyncio
 import copy
-import inspect
 import json
 from collections.abc import Callable
 from pathlib import Path
@@ -295,23 +293,3 @@ def create_app(device: FakeStreamMagicDevice) -> web.Application:
     app = web.Application()
     app.router.add_get("/smoip", smoip)
     return app
-
-
-async def wait_until(predicate: Callable[[], bool], timeout: float = 1.0) -> None:
-    """Wait for state pushed over the fake websocket to reach the client."""
-    loop = asyncio.get_running_loop()
-    deadline = loop.time() + timeout
-    while not predicate():
-        if loop.time() >= deadline:
-            raise AssertionError(
-                f"Timed out after {timeout}s waiting for {_describe(predicate)}"
-            )
-        await asyncio.sleep(0)
-
-
-def _describe(predicate: Callable[[], bool]) -> str:
-    """Render a predicate as its source line so failures name what never happened."""
-    try:
-        return inspect.getsource(predicate).strip()
-    except OSError:
-        return repr(predicate)

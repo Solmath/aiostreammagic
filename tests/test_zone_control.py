@@ -1,7 +1,8 @@
 """Tests for zone-level controls: volume, source, power and device settings."""
 
 import pytest
-from fake_device import FakeStreamMagicDevice, wait_until
+from conftest import wait_until
+from fake_device import FakeStreamMagicDevice
 
 from aiostreammagic import endpoints as ep
 from aiostreammagic.exceptions import StreamMagicError
