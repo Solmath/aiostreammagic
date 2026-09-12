@@ -118,11 +118,11 @@ class FakeStreamMagicDevice:
                 }
             ]
 
-        changed = self._apply(path, params)
+        touched = self._apply(path, params)
         messages = [self._message(path, "response")]
         messages.extend(
-            self._message(changed_path, "emit")
-            for changed_path in sorted((changed - {path}) & self.subscriptions)
+            self._message(touched_path, "emit")
+            for touched_path in sorted((touched - {path}) & self.subscriptions)
         )
         return messages
 
@@ -148,7 +148,7 @@ class FakeStreamMagicDevice:
         }
 
     def _apply(self, path: str, params: dict[str, Any]) -> set[str]:
-        """Mutate device state for a command and report the paths it changed."""
+        """Mutate device state for a command and report the paths it touched."""
         if path == ep.ZONE_STATE:
             return self._apply_zone_state(params)
         if path == ep.POWER:
