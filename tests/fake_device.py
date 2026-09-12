@@ -120,6 +120,7 @@ class FakeStreamMagicDevice:
 
         touched = self._apply(path, params)
         messages = [self._message(path, "response")]
+        # Responses already reach subscribers, so only emit for other paths.
         messages.extend(
             self._message(touched_path, "emit")
             for touched_path in sorted((touched - {path}) & self.subscriptions)
@@ -139,6 +140,7 @@ class FakeStreamMagicDevice:
                 continue
 
     def _message(self, path: str, message_type: str) -> dict[str, Any]:
+        """Frame the payload currently served for a path as a SMoIP message."""
         return {
             "path": path,
             "type": message_type,
@@ -173,6 +175,7 @@ class FakeStreamMagicDevice:
         return set()
 
     def _apply_zone_state(self, params: dict[str, Any]) -> set[str]:
+        """Apply a zone command, clamping a relative volume step into 0-100."""
         state = self.data(ep.ZONE_STATE)
         for key in ("volume_percent", "mute", "source", "pre_amp_mode", "cbus"):
             if key in params:
@@ -185,6 +188,7 @@ class FakeStreamMagicDevice:
         return {ep.ZONE_STATE}
 
     def _apply_power(self, params: dict[str, Any]) -> set[str]:
+        """Apply a power command; the device reports these fields in zone state."""
         state = self.data(ep.ZONE_STATE)
         if "power" in params:
             state["power"] = params["power"] == "ON"
@@ -194,6 +198,7 @@ class FakeStreamMagicDevice:
         return {ep.ZONE_STATE}
 
     def _apply_audio(self, params: dict[str, Any]) -> set[str]:
+        """Apply an audio command, seeding EQ blocks a capture may not contain."""
         audio = self.data(ep.AUDIO)
         for key in ("balance", "volume_limit_percent"):
             if key in params:
@@ -238,6 +243,7 @@ class FakeStreamMagicDevice:
         bands.sort(key=lambda band: int(band["index"]))
 
     def _apply_play_control(self, params: dict[str, Any]) -> set[str]:
+        """Apply a transport command, resolving ``toggle`` against current state."""
         play_state = self.data(ep.PLAY_STATE)
         if "mode_shuffle" in params:
             mode = str(params["mode_shuffle"])
@@ -270,6 +276,7 @@ def create_app(device: FakeStreamMagicDevice) -> web.Application:
     """Build an aiohttp app serving the device on the device's `/smoip` endpoint."""
 
     async def smoip(request: web.Request) -> web.WebSocketResponse:
+        """Serve one client for the lifetime of its websocket connection."""
         websocket = web.WebSocketResponse()
         await websocket.prepare(request)
         device.connections.append(websocket)
