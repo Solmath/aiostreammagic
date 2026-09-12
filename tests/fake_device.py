@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import asyncio
 import copy
+import inspect
 import json
 from collections.abc import Callable
 from pathlib import Path
@@ -293,5 +294,15 @@ async def wait_until(predicate: Callable[[], bool], timeout: float = 1.0) -> Non
     deadline = loop.time() + timeout
     while not predicate():
         if loop.time() >= deadline:
-            raise AssertionError("Condition was not met before the timeout")
+            raise AssertionError(
+                f"Timed out after {timeout}s waiting for {_describe(predicate)}"
+            )
         await asyncio.sleep(0)
+
+
+def _describe(predicate: Callable[[], bool]) -> str:
+    """Render a predicate as its source line so failures name what never happened."""
+    try:
+        return inspect.getsource(predicate).strip()
+    except OSError:
+        return repr(predicate)
