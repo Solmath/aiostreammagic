@@ -222,25 +222,26 @@ class FakeStreamMagicDevice:
         user_eq: dict[str, Any] = audio.setdefault("user_eq", {"enabled": False})
         bands: list[dict[str, Any]] = user_eq.setdefault("bands", [])
         by_index = {int(band["index"]): band for band in bands}
-        parsers: dict[str, Callable[[str], Any]] = {
-            "filter": str,
-            "freq": int,
-            "gain": float,
-            "q": float,
-        }
+        # Ordered, not a lookup: these line up with fields 2-5 of each chunk.
+        parsers: tuple[tuple[str, Callable[[str], Any]], ...] = (
+            ("filter", str),
+            ("freq", int),
+            ("gain", float),
+            ("q", float),
+        )
         for chunk in raw_bands.split("|"):
             if not chunk:
                 continue
             index_value, *values = chunk.split(",")
             index = int(index_value)
-            band = by_index.get(index)
+            band: dict[str, Any] | None = by_index.get(index)
             if band is None:
                 band = {"index": index}
                 by_index[index] = band
                 bands.append(band)
-            for key, value in zip(parsers, values):
+            for (key, parse), value in zip(parsers, values):
                 if value != "":
-                    band[key] = parsers[key](value)
+                    band[key] = parse(value)
         bands.sort(key=lambda band: int(band["index"]))
 
     def _apply_play_control(self, params: dict[str, Any]) -> set[str]:
