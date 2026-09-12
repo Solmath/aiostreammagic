@@ -102,6 +102,7 @@ class FakeStreamMagicDevice:
 
         if "update" in params:
             self.subscriptions.add(path)
+            # The client's subscribe awaits no reply, so an emit is the only answer.
             return [self._message(path, "emit")]
 
         self.requests.append((path, params))
